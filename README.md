@@ -1,40 +1,47 @@
-#Folder Structure
-bash`
+## 📁 Folder Structure
+
+### Client Structure
+
+```bash
 client/src/
 ├── assets/             # Static files (images, global icons)
-├── components/         # Global shared UI (SaaS-style buttons, modals, inputs)
-├── config/             # Environment variables and global config
-├── features/           # The core of your application
+├── components/         # Reusable shared UI components (buttons, modals, inputs)
+├── config/             # Environment variables and global configuration
+├── features/           # Feature-based modules
 │   ├── mentorship/
-│   │   ├── api/        # API calls specific to mentorship
-│   │   ├── components/ # UI components only used here
+│   │   ├── api/        # API calls related to mentorship
+│   │   ├── components/ # Components used only within mentorship
 │   │   ├── hooks/      # Custom hooks (e.g., useMentorshipRequests)
-│   │   └── index.js    # Public API for this feature
+│   │   └── index.js    # Public exports for the feature
 │   ├── messaging/
 │   ├── jobs/
 │   └── events/
-├── hooks/              # Global shared hooks (e.g., useAuth, useTheme)
-├── layouts/            # Page wrappers (Sidebar, Navbar layouts)
-├── pages/              # Route components (stitches features together)
+├── hooks/              # Shared custom hooks (e.g., useAuth, useTheme)
+├── layouts/            # Application layouts (Sidebar, Navbar, etc.)
+├── pages/              # Route-level pages that compose features
 ├── routes/             # React Router configuration
-├── store/              # Global state management (Zustand or Redux)
-├── styles/             # Global CSS/Tailwind configs
-└── utils/              # Helper functions (date formatters, validators)`
-bash`
+├── store/              # Global state management (Redux/Zustand)
+├── styles/             # Global styles and Tailwind configuration
+└── utils/              # Utility functions and helpers
+```
+
+### Server Structure
+
+```bash
 server/src/
 ├── api/
-│   ├── middlewares/    # Auth, error handling, rate limiting
+│   ├── middlewares/    # Authentication, error handling, rate limiting
 │   └── routes/         # Express route definitions
-├── config/             # DB connections, environment variables
-├── modules/            # Feature-based domain logic
+├── config/             # Database connections and environment configuration
+├── modules/            # Feature-based business domains
 │   ├── users/
-│   │   ├── user.controller.js  # Handles HTTP requests/responses
-│   │   ├── user.service.js     # Pure business logic
-│   │   └── user.model.js       # Mongoose schema
+│   │   ├── user.controller.js  # Handles HTTP requests and responses
+│   │   ├── user.service.js     # Business logic layer
+│   │   └── user.model.js       # Mongoose schema/model
 │   ├── mentorship/
 │   ├── jobs/
 │   └── messaging/
-├── services/           # Third-party integrations (AWS S3, Email, SMS)
-├── utils/              # Custom errors, loggers
-└── app.js              # Express app setup and middleware pipeline
-`
+├── services/           # Third-party integrations (AWS S3, Email, SMS, etc.)
+├── utils/              # Custom utilities, loggers, and error classes
+└── app.js              # Express application setup and middleware pipeline
+```
