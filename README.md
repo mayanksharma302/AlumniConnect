@@ -1,1 +1,1 @@
-hello
+Hello we're developers of AlumniConnect.
