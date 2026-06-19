@@ -16,7 +16,7 @@ const profileSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        proffesionalHeadline: {
+        professionalHeadline: {
             type: String
         },
         education: [{
