@@ -18,7 +18,7 @@ const mentorshipSchema = new mongoose.Schema(
             default: 'pending',
             index: true
         },
-        Initialmessage: {
+        initialmessage: {
             type: String,
             maxlength: 500
         },
