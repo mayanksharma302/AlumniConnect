@@ -12,10 +12,10 @@ const LandingPage = () => {
     return (
         <>
             <NavBar />
-            <Hero />
+            <Hero id="#" />
             <Stats />
-            <HowItWorks />
-            <Features />
+            <HowItWorks id="how-it-works" />
+            <Features id="features"/>
             <Testimonials />
             <CTA />
             <Footer />
