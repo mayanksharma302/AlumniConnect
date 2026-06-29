@@ -1,15 +1,11 @@
 import connectDB from "./db/index.js";
 import {app} from "./app.js";
-import dotenv from "dotenv";
-
-dotenv.config({
-    Path: "./.env"
-});
+import config from "./config/config.js";
 
 connectDB()
 .then(() => {
-    app.listen(process.env.PORT || 3000, () => {
-        console.log(`Server running on port ${process.env.PORT || 3000}`);
+    app.listen(config.PORT, () => {
+        console.log(`Server running on port ${config.PORT} and connected to the database successfully.`);
     });
 })
 .catch((error) => {
