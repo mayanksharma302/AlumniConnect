@@ -18,6 +18,7 @@ const otpModel = new mongoose.Schema({
     timestamps: true
 })
 
+otpModel.index({createdAt:1}, { expireAfterSeconds: 300})
 const otps = mongoose.model("otps", otpModel)
 
 export default otps;

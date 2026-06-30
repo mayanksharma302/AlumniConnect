@@ -9,9 +9,30 @@ import Session from "../models/session.model.js";
 import { sendEmail } from "../services/email.service.js";
 import { generateOtp, getOtpHtml } from "../utils/utils.js";
 
+async function sendOtp(user){
+    const otp = generateOtp();
+    const html = getOtpHtml(otp);
+
+    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+    await otps.create({
+        user: user._id,
+        email: user.email,
+        otpHash
+    })
+
+    await sendEmail(user.email,"OTP Verification", `Your OTP code is ${otp}`, html);
+}
+
 
 const registerUser = async (req, res) => {
     const { username, email, password, role } = req.body;
+
+    if(!username || !email || !password || !role){
+        res.status(401).json({
+            message: "One or more fields are missing"
+        })
+    }
 
     const isAlreadyRegistered = await userModel.findOne({
         $or: [
@@ -36,18 +57,7 @@ const registerUser = async (req, res) => {
         AccountStatus: "unverified"
     })
 
-    const otp = generateOtp();
-    const html = getOtpHtml(otp);
-
-    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
-
-    await otps.create({
-        user: user._id,
-        email,
-        otpHash
-    })
-
-    await sendEmail(email,"OTP Verification", `Your OTP code is ${otp}`, html);
+    sendOtp(user);
 
     res.status(201).json({
         message: "User registered successfully",
@@ -75,12 +85,6 @@ const login = async (req, res) => {
         })
     }
 
-    if(!user.emailVerified){
-        return res.status(401).json({
-            message: "Email is not verified"
-        })
-    }
-
     const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
 
     const isPasswordValid = hashedPassword == user.password
@@ -88,6 +92,20 @@ const login = async (req, res) => {
     if(!isPasswordValid){
         res.status(401).json({
             message: "Invalid email or password"
+        })
+    }
+
+    if(!user.emailVerified){
+        const isOtpPresent = await otps.findOne({
+            user: user._id,
+        })
+
+        if(!isOtpPresent){
+            sendOtp(user)
+        }
+
+        return res.status(401).json({
+            message: "Email is not verified"
         })
     }
 
@@ -274,7 +292,5 @@ const verifyEmail = async (req, res) => {
     })
 
 }
-
-
 
 export { registerUser, refreshToken, logout, logoutAll, login, verifyEmail };

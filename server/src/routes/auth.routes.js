@@ -16,7 +16,7 @@ authRouter.get("/verify-email", verifyEmail)
 /**
  * @route POST /api/auth/login
  */
-authRouter.post("/login",login)
+authRouter.post("/login", login)
 
 /**
  * @route GET /api/auth/refresh-token
@@ -28,7 +28,7 @@ authRouter.get("/refresh-token", refreshToken)
 /**
  * @route GET /api/auth/logout
  */
-authRouter.get("/logout",logout)
+authRouter.get("/logout", logout)
 
 /**
  * @route GET /api/auth/logoutall
