@@ -25,7 +25,7 @@ transporter.verify((error, success) => {
 const sendEmail = async (to, subject, text, html) => {
     try {
         const info = await transporter.sendMail({
-            from: `"Your Name": <${config.GOOGLE_USER}>`,
+            from: `"AlumniConnect": <${config.GOOGLE_USER}>`,
             to,
             subject,
             text,
