@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const NavBar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -30,7 +31,7 @@ const NavBar = () => {
                             onClick={() => { setactive(tag) }}
                             className={`${active === tag ? "text-[#004AC6]" : ""}`}
                         >
-                            Home
+                            {label}
                         </a>
                     </div>
                 ))}
@@ -39,11 +40,11 @@ const NavBar = () => {
                 < div className="hidden lg:flex gap-4" >
 
                     <button className="text-[#004AC6] px-4 py-2">
-                        Login
+                        <Link to="/signin">Login</Link>
                     </button>
 
                     <button className="bg-[#004AC6] text-white rounded-xl px-5 py-2">
-                        Register
+                        <Link to="/signup">Register</Link>
                     </button>
 
                 </div>
