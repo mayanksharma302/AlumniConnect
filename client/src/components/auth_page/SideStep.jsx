@@ -1,31 +1,45 @@
-import React from 'react'
+const SideStep = ({
+    step,
+    title,
+    icon,
+    active = false,
+    completed = false,
+    disabled = false,
+}) => {
 
-const SideStep = ({ icon, step, title, active = false, completed = false, disabled = false }) => {
+    const container =
+        active
+            ? "opacity-100"
+            : completed
+                ? "opacity-100"
+                : "opacity-40";
+
+    const circle =
+        completed
+            ? "bg-white text-[#004AC6]"
+            : active
+                ? "bg-white text-[#004AC6]"
+                : "bg-[#2B67D6] text-white";
+
     return (
-        <div className="flex items-center gap-4">
+        <div className={`flex items-center gap-4 ${container}`}>
 
-            <div
-                className={`
-                w-10 h-10 rounded-full flex items-center justify-center
-                ${completed
-                        ? "bg-white text-[#004AC6]"
-                        : active
-                            ? "bg-white text-[#004AC6]"
-                            : "bg-[#2B61D4] text-blue-300"
-                    }
-            `}
-            >
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${circle}`}>
                 {icon}
             </div>
 
             <div>
-                <p className={`text-xs ${disabled ? "text-blue-300" : "text-blue-100"}`}>
+                <p className="text-xs text-blue-200">
                     {step}
                 </p>
-                <h3 className={`font-semibold text-xl ${disabled ? "text-blue-300" : "text-white"}`}>{title} </h3>
-            </div>
-        </div>
-    )
-}
 
-export default SideStep
+                <h4 className="font-semibold text-lg">
+                    {title}
+                </h4>
+            </div>
+
+        </div>
+    );
+};
+
+export default SideStep;
