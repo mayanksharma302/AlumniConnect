@@ -45,9 +45,6 @@ const steps = [
 
 const StepCard = ({ step, index }) => (
     <div className="flex flex-col items-center text-center gap-4 px-6 relative">
-        {index < steps.length - 1 && (
-            <div className="hidden lg:block absolute top-8 left-[calc(50%+48px)] w-[calc(100%-96px)] border-t-2 border-dashed border-blue-200 z-0" />
-        )}
         <div className="relative z-10 flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 text-[#004AC6] border-2 border-blue-200 shadow-sm">
             {step.icon}
         </div>

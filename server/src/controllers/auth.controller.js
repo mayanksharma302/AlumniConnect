@@ -70,7 +70,7 @@ const login = async (req, res) => {
     const { identifier, password } = req.body;
 
     if (!identifier && !password) {
-        res.status(400).json({
+        return res.status(400).json({
             message: "Email-Username & Password is required"
         })
     }
@@ -87,7 +87,7 @@ const login = async (req, res) => {
     })
 
     if (!user) {
-        res.status(401).json({
+        return res.status(401).json({
             message: "Invalid email-username or Password"
         })
     }
@@ -97,7 +97,7 @@ const login = async (req, res) => {
     const isPasswordValid = hashedPassword == user.password
 
     if (!isPasswordValid) {
-        res.status(401).json({
+        return res.status(401).json({
             message: "Invalid email-username or password"
         })
     }

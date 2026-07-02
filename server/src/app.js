@@ -4,6 +4,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import config from "./config/config.js";
 import authRouter from "./routes/auth.routes.js";
+import profileRouter from "./routes/profile.routes.js";
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.use(express.static("public"));
 app.use(morgan("dev"));
 
 // Routes
-
 app.use("/api/auth", authRouter);
+app.use("/api/profile", profileRouter);
 
 export { app };
