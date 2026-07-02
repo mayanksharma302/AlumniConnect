@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import {
+    UserPlus,
     User,
     Mail,
     Lock,
@@ -10,7 +11,7 @@ import {
     GraduationCap,
     Check
 } from "lucide-react";
-import LeftPannel from "../components/auth_page/LeftPannel";
+import LeftPanel from "../components/auth_page/LeftPannel";
 import RoleCard from "../components/auth_page/RoleCard";
 import TrustLables from "../components/auth_page/TrustLables";
 import { Toaster, toast } from 'sonner';
@@ -20,7 +21,6 @@ const SignUpPage = () => {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
     const {
         register,
         handleSubmit,
@@ -30,6 +30,21 @@ const SignUpPage = () => {
         mode: "onSubmit",
         reValidateMode: "onChange",
     });
+
+    const authSteps = [
+        {
+            title: "Register",
+            icon: <UserPlus size={16} />,
+        },
+        {
+            title: "Verify Email",
+            icon: <Mail size={16} />,
+        },
+        {
+            title: "Complete Profile",
+            icon: <User size={16} />,
+        },
+    ];
 
     const password = watch("password");
 
@@ -66,7 +81,12 @@ const SignUpPage = () => {
 
             {/* LEFT PANEL */}
             <div className="hidden lg:flex w-[32%] bg-[#004AC6] text-white h-screen sticky top-0">
-                <LeftPannel />
+                <LeftPanel
+                    title="Create Your Account"
+                    subtitle="Join AlumniConnect and start building your professional network."
+                    steps={authSteps}
+                    currentStep={1}
+                />
             </div>
 
             {/* RIGHT PANEL */}

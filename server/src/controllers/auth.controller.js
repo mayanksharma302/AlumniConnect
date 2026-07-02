@@ -9,6 +9,21 @@ import Session from "../models/session.model.js";
 import { sendEmail } from "../services/email.service.js";
 import { generateOtp, getOtpHtml } from "../utils/utils.js";
 
+const resendOtp = async (user) => {
+    const otp = generateOtp();
+    const html = getOtpHtml(otp);
+
+    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+    await otps.create({
+        user: user._id,
+        email: user.email,
+        otpHash
+    })
+
+    await sendEmail(user.email, "OTP Verification", `Your OTP code is ${otp}`, html);
+}
+
 async function sendOtp(user) {
     const otp = generateOtp();
     const html = getOtpHtml(otp);
@@ -111,8 +126,14 @@ const login = async (req, res) => {
             sendOtp(user)
         }
 
-        return res.status(401).json({
-            message: "Email is not verified"
+        console.log({
+            email: user.email,
+            message: "Email is not verified",
+        });
+
+        return res.status(400).json({
+            message: "Email is not verified",
+            user: user,
         })
     }
 
@@ -266,7 +287,7 @@ const logoutAll = async (req, res) => {
 }
 
 const verifyEmail = async (req, res) => {
-    const { otp, email } = req.body;
+    const { otp, email } = req.query;
 
     const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
 
@@ -300,4 +321,4 @@ const verifyEmail = async (req, res) => {
 
 }
 
-export { registerUser, refreshToken, logout, logoutAll, login, verifyEmail };
+export { registerUser, refreshToken, logout, logoutAll, login, verifyEmail, resendOtp };

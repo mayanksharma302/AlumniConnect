@@ -11,9 +11,13 @@ import {
 } from "lucide-react";
 import TrustLables from "../components/auth_page/TrustLables";
 import LeftPannel from "../components/auth_page/LeftPannel";
+import { useNavigate } from 'react-router-dom'
+import { toast } from "sonner"
+import LeftPanel from "../components/auth_page/LeftPannel";
 
 const SignIn = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate()
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm(
         { mode: "onSubmit", reValidateMode: "onChange" }
@@ -21,7 +25,7 @@ const SignIn = () => {
 
     const onSubmit = async (data) => {
         try {
-            const res = await axios.post(
+            const response = await axios.post(
                 "http://localhost:8000/api/auth/login",
                 {
                     identifier: data.identifier,
@@ -29,21 +33,63 @@ const SignIn = () => {
                 }
             );
 
+            sessionStorage.setItem(
+                "user",
+                JSON.stringify(response.data.user)
+            );
 
-            console.log(res.data);
-            alert("Login Successful");
-        } catch (err) {
-            console.log(err);
-            alert(err.response?.data?.message || "Invalid Email or Password");
+            sessionStorage.setItem(
+                "accessToken",
+                response.data.accessToken
+            );
+
+            toast.success(response.data.message || "Login successful!");
+
+            navigate("/dashboard");
+
+        } catch (error) {
+
+            if (error.response?.status === 400) {
+
+                console.log(error.response);
+
+
+                // Store email for Verify Email page
+                sessionStorage.setItem(
+                    "verificationEmail",
+                    error.response.data.user.email
+                );
+
+                toast.warning(
+                    error.response.data.message ||
+                    "Email is not verified."
+                );
+
+                navigate("/verify-email");
+
+            } else {
+
+                toast.error(
+                    error.response?.data?.message ||
+                    "Login failed. Try again."
+                );
+
+            }
         }
     };
+
+
 
     return (
         <div className="min-h-screen bg-[#F8F9FF] flex">
 
             {/* LEFT PANEL */}
             <div className="hidden lg:flex w-[32%] bg-[#004AC6] text-white">
-                <LeftPannel />
+                <LeftPanel
+                    title="Welcome Back"
+                    subtitle=
+                    "Sign in to reconnect with your alumni network."
+                />
             </div>
 
             {/* RIGHT PANEL */}
