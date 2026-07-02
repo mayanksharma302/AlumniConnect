@@ -43,4 +43,4 @@ function getOtpHtml(otp) {
 </html>`;
 }
 
-export { generateOtp, getOtpHtml}
+export { generateOtp, getOtpHtml }

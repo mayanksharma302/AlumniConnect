@@ -21,6 +21,18 @@ if(!process.env.GOOGLE_USER){
     throw new Error("GOOGLE_USER is not defined in enviroment variable")
 }
 
+if(!process.env.CLOUDINARY_CLOUD_NAME){
+    throw new Error("CLOUDINARY_CLOUD_NAME is not defined in enviroment variable")
+}
+
+if(!process.env.CLOUDINARY_API_KEY){
+    throw new Error("CLOUDINARY_API_KEY is not defined in enviroment variable")
+}
+
+if(!process.env.CLOUDINARY_API_SECRET){
+    throw new Error("CLOUDINARY_API_SECRET is not defined in enviroment variable")
+}
+
 const config = {
     PORT: process.env.PORT || 3000,
     CORS_ORIGIN: process.env.CORS_ORIGIN || "*",
@@ -29,7 +41,10 @@ const config = {
     GOOGLE_CLIENT: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GOOGLE_REFRESH_TOKEN: process.env.GOOGLE_REFRESH_TOKEN,
-    GOOGLE_USER: process.env.GOOGLE_USER
+    GOOGLE_USER: process.env.GOOGLE_USER,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET
 }
 
 export default config;
