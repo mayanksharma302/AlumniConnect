@@ -35,6 +35,7 @@ function getOtpHtml(otp) {
 <body>
     <div class="container">
         <h2>Your OTP Code</h2>
+        <p>This OTP is valid for 5 minutes only.</p>
         <p class="otp">${otp}</p>
         <p>Please use this code to verify your email address.</p>
     </div>

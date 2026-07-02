@@ -9,9 +9,30 @@ import Session from "../models/session.model.js";
 import { sendEmail } from "../services/email.service.js";
 import { generateOtp, getOtpHtml } from "../utils/utils.js";
 
+async function sendOtp(user) {
+    const otp = generateOtp();
+    const html = getOtpHtml(otp);
+
+    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+    await otps.create({
+        user: user._id,
+        email: user.email,
+        otpHash
+    })
+
+    await sendEmail(user.email, "OTP Verification", `Your OTP code is ${otp}`, html);
+}
+
 
 const registerUser = async (req, res) => {
     const { username, email, password, role } = req.body;
+
+    if (!username || !email || !password || !role) {
+        res.status(401).json({
+            message: "One or more fields are missing"
+        })
+    }
 
     const isAlreadyRegistered = await userModel.findOne({
         $or: [
@@ -36,18 +57,7 @@ const registerUser = async (req, res) => {
         AccountStatus: "unverified"
     })
 
-    const otp = generateOtp();
-    const html = getOtpHtml(otp);
-
-    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
-
-    await otps.create({
-        user: user._id,
-        email,
-        otpHash
-    })
-
-    await sendEmail(email,"OTP Verification", `Your OTP code is ${otp}`, html);
+    sendOtp(user);
 
     res.status(201).json({
         message: "User registered successfully",
@@ -57,27 +67,28 @@ const registerUser = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const {email, password} = req.body;
+    const { identifier, password } = req.body;
 
-    if(!email && !password){
-        res.status(400).json({
-            message: "Email & Password is requires"
+    if (!identifier && !password) {
+        return res.status(400).json({
+            message: "Email-Username & Password is required"
         })
     }
 
     const user = await userModel.findOne({
-        email
+        $or: [
+            {
+                email: identifier.toLowerCase()
+            },
+            {
+                username: identifier
+            }
+        ]
     })
 
-    if(!user){
-        res.status(401).json({
-            message: "Invalid email or Password"
-        })
-    }
-
-    if(!user.emailVerified){
+    if (!user) {
         return res.status(401).json({
-            message: "Email is not verified"
+            message: "Invalid email-username or Password"
         })
     }
 
@@ -85,15 +96,29 @@ const login = async (req, res) => {
 
     const isPasswordValid = hashedPassword == user.password
 
-    if(!isPasswordValid){
-        res.status(401).json({
-            message: "Invalid email or password"
+    if (!isPasswordValid) {
+        return res.status(401).json({
+            message: "Invalid email-username or password"
+        })
+    }
+
+    if (!user.emailVerified) {
+        const isOtpPresent = await otps.findOne({
+            user: user._id,
+        })
+
+        if (!isOtpPresent) {
+            sendOtp(user)
+        }
+
+        return res.status(401).json({
+            message: "Email is not verified"
         })
     }
 
     const refreshToken = jwt.sign({
         id: user._id,
-    }, config.JWT_SECRET,{
+    }, config.JWT_SECRET, {
         expiresIn: "7d"
     })
 
@@ -109,11 +134,11 @@ const login = async (req, res) => {
     const accessToken = jwt.sign({
         user: user._id,
         sessionId: session._id
-    },config.JWT_SECRET,{
+    }, config.JWT_SECRET, {
         expiresIn: "15min"
     })
 
-    res.cookie("refreshToken",refreshToken,{
+    res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: "strict",
@@ -241,7 +266,7 @@ const logoutAll = async (req, res) => {
 }
 
 const verifyEmail = async (req, res) => {
-    const { otp, email} = req.body;
+    const { otp, email } = req.body;
 
     const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
 
@@ -250,13 +275,13 @@ const verifyEmail = async (req, res) => {
         otpHash
     })
 
-    if(!otpDoc){
+    if (!otpDoc) {
         res.status(401).json({
             message: "Invalid OTP"
         })
     }
 
-    const user = await userModel.findByIdAndUpdate(otpDoc.user,{
+    const user = await userModel.findByIdAndUpdate(otpDoc.user, {
         emailVerified: true
     })
 
@@ -274,7 +299,5 @@ const verifyEmail = async (req, res) => {
     })
 
 }
-
-
 
 export { registerUser, refreshToken, logout, logoutAll, login, verifyEmail };
