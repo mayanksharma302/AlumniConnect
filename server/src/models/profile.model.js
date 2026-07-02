@@ -46,7 +46,10 @@ const profileSchema = new mongoose.Schema(
             type: String,
             index: true
         }],
-        profilePicture: String,
+        profilePicture: {
+            type: String,
+            default: null
+        },
     },
     {
         timestamps: true
