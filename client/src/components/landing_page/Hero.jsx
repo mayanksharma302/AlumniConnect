@@ -3,8 +3,10 @@ import HeroImage from '../../assets/hero_image.png'
 
 const Hero = () => {
     return (
+        // Hero Section
         <section className='px-6 py-8 bg-linear-to-b from-blue-200 from-30% to-white to-70%'>
             <div className='max-w-[1400px] mx-auto py-12 flex flex-col-reverse lg:flex-row items-center justify-evenly gap-10'>
+
                 {/* Text content */}
                 <div className='flex flex-col gap-4 text-center lg:text-left items-center lg:items-start max-w-xl 2xl:max-w-2xl'>
                     <div className='bg-[#D0E1FB] px-3 py-2 w-fit rounded-full text-base flex'>BRIDGE THE GAP</div>
