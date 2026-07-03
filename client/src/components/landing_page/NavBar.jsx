@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 const NavBar = () => {
+    const [active, setactive] = useState("home")
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const [active, setactive] = useState("home")
-
-
     return (
+        // NavBar
         <nav className="fixed top-0 left-0 right-0 bg-white z-50 shadow-sm h-16 flex justify-center">
             <div className="mx-6 flex items-center justify-between w-full max-w-7xl">
 
@@ -48,7 +47,6 @@ const NavBar = () => {
                     </button>
 
                 </div>
-
 
                 {/* Hamburger */}
                 <button
@@ -99,12 +97,10 @@ const NavBar = () => {
                             <button className="flex-1 border border-[#004AC6] text-[#004AC6] rounded-xl py-2">
                                 Login
                             </button>
-
                             <button className="flex-1 bg-[#004AC6] text-white rounded-xl py-2">
                                 Register
                             </button>
                         </div>
-
                     </div>
                 )
             }

@@ -3,6 +3,7 @@ import StatCard from './StatCard'
 
 const Stats = () => {
     return (
+        // Stats
         <section className='grid grid-cols-2 lg:flex py-8 justify-evenly bg-white border-b border-gray-300 gap-4 px-6 lg:px-0 lg:gap-0'>
             <StatCard number="10,000" detail="Registered Alumni" />
             <StatCard number="1,200" detail="Active Mentors" />

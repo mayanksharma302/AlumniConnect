@@ -44,8 +44,7 @@ const SignIn = () => {
             );
 
             toast.success(response.data.message || "Login successful!");
-
-            navigate("/dashboard");
+            navigate("/upload-profile-image");
 
         } catch (error) {
 

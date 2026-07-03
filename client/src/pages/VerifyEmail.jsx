@@ -95,7 +95,7 @@ const VerifyEmail = () => {
                 "Email verified successfully"
             );
 
-            navigate("/complete-profile");
+            navigate("/upload-profile-image");
 
         }
 
