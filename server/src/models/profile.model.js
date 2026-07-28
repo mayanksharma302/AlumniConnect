@@ -42,10 +42,22 @@ const profileSchema = new mongoose.Schema(
             type: String,
             index: true
         }],
-        location: [{
-            type: String,
-            index: true
-        }],
+        location: {
+            address: { type: String },
+            city: {
+                type: String,
+                index: true
+            },
+            state: {
+                type: String,
+                index: true
+            },
+            country: {
+                type: String,
+                default: 'India'
+            },
+            pincode: { type: String }
+        },
         profilePicture: {
             type: String,
             default: null
