@@ -6,8 +6,8 @@ import config from "./config/config.js";
 import authRouter from "./routes/auth.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import mentorshipRouter from "./routes/mentorship.routes.js";
-
-const app = express();
+import messageRouter from "./routes/message.route.js";
+import { app, server } from "./services/socket.service.js";
 
 // Configuaration for cross origin resource sharing
 app.use(cors({
@@ -29,5 +29,6 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/mentorship", mentorshipRouter)
+app.use("/api/message", messageRouter)
 
 export { app };
