@@ -39,7 +39,6 @@ async function sendOtp(user) {
     await sendEmail(user.email, "OTP Verification", `Your OTP code is ${otp}`, html);
 }
 
-
 const registerUser = async (req, res) => {
     const { username, email, password, role } = req.body;
 

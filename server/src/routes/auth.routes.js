@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { registerUser, refreshToken, logout, logoutAll, login, verifyEmail, resendOtp } from "../controllers/auth.controller.js";
+import { 
+    registerUser, 
+    refreshToken, 
+    logout, 
+    logoutAll, 
+    login, 
+    verifyEmail, 
+    resendOtp } from "../controllers/auth.controller.js";
 
 const authRouter = Router();
 

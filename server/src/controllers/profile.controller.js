@@ -470,7 +470,6 @@ const addSkill = async (req, res) => {
     }
 }
 
-
 const removeSkill = async (req, res) => {
     try {
         const { skill } = req.params; // Passed in URL: /api/profile/skills/React

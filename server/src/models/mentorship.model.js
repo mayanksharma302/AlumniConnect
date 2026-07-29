@@ -5,7 +5,7 @@ const mentorshipSchema = new mongoose.Schema(
         mentorId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
-            required: true,
+            required: true
         },
         menteeId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -14,19 +14,13 @@ const mentorshipSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['pending', 'active', 'completed', 'cancelled'],
-            default: 'pending',
-            index: true
+            enum: ['pending', 'accepted', 'rejected'],
+            default: 'pending'
         },
-        initialmessage: {
+        message: {
             type: String,
+            required: true,
             maxlength: 500
-        },
-        mentorshipStartedAt: {
-            type: Date,
-        },
-        mentorshipEndedAt: {
-            type: Date,
         }
     },
     {
