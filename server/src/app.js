@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import config from "./config/config.js";
 import authRouter from "./routes/auth.routes.js";
 import profileRouter from "./routes/profile.routes.js";
+import mentorshipRouter from "./routes/mentorship.routes.js";
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.use(morgan("dev"));
 // Routes
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/mentorship", mentorshipRouter)
 
 export { app };
