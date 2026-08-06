@@ -3,6 +3,12 @@ import Job from '../models/jobs.model.js';
 // 1. Post a new Job (Alumni only)
 const createJob = async (req, res) => {
     try {
+        if (req.user.role !== 'alumni') {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Access Denied: Only alumni can post jobs." 
+            });
+        }
         const { company, jobTitle, jobDescription, requirements, applyLink, validityDays } = req.body;
         const postedBy = req.user._id;
 
@@ -65,6 +71,12 @@ const getAllJobs = async (req, res) => {
 // 3. Get jobs posted by the logged-in user (So Alumni can manage their posts)
 const getMyJobs = async (req, res) => {
     try {
+        if (req.user.role !== 'alumni') {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Access Denied: Only alumni can get jobs." 
+            });
+        }
         const userId = req.user._id;
         const jobs = await Job.find({ postedBy: userId })
         .sort({ createdAt: -1 });
@@ -86,6 +98,12 @@ const getMyJobs = async (req, res) => {
 // 4. Delete a Job
 const deleteJob = async (req, res) => {
     try {
+        if (req.user.role !== 'alumni') {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Access Denied: Only alumni can delete jobs." 
+            });
+        }
         const jobId = req.params.jobId;
         const userId = req.user._id;
 
@@ -118,6 +136,5 @@ const deleteJob = async (req, res) => {
         });
     }
 }
-
 
 export { createJob, getAllJobs, getMyJobs, deleteJob };
