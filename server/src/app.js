@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import mentorshipRouter from "./routes/mentorship.routes.js";
 import messageRouter from "./routes/message.route.js";
+import jobRouter from "./routes/job.routes.js";
 import { app, server } from "./services/socket.service.js";
 
 // Configuaration for cross origin resource sharing
@@ -30,5 +31,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/mentorship", mentorshipRouter)
 app.use("/api/message", messageRouter)
+app.use("/api/jobs", jobRouter)
 
 export { app };
