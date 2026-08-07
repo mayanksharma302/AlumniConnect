@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const jobSchema = new mongoose.Schema(
     {
         postedBy: {
-            type: mongoose.Schema.types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true,
             index: true

@@ -94,28 +94,63 @@ const getProfileByUserId = async (req, res) => {
 
 const getAlumniDirectory = async (req, res) => {
     try {
-        const { search, skills, location, page = 1, limit = 10 } = req.query;
-        let query = {};
+        const {
+            search,
+            skills,
+            location,
+            department,
+            graduationYear,
+            company,
+            page = 1,
+            limit = 10
+        } = req.query;
 
-        // Flexible Regex Searching
+        // We use an array to hold all our separate query conditions
+        // This prevents different $or statements from overwriting each other
+        let andConditions = [];
+
+        // 1. Strict Filters (Exact Matches)
+        if (department) {
+            // Note: Update 'education.department' to match your actual schema structure
+            andConditions.push({ 'education.department': department });
+        }
+        if (graduationYear) {
+            andConditions.push({ 'education.graduationYear': parseInt(graduationYear) });
+        }
+
+        // 2. Flexible Regex Searching (Partial/Case-Insensitive Matches)
         if (skills) {
-            query.skills = { $regex: skills, $options: 'i' }; // Case-insensitive
+            andConditions.push({ skills: { $regex: skills, $options: 'i' } });
         }
+
+        if (company) {
+            // Searches their experience array for the company name
+            andConditions.push({ 'experience.companyName': { $regex: company, $options: 'i' } });
+        }
+
         if (location) {
-            // This allows a user to type "Gujarat" and it will check both city and state fields
-            query.$or = [
-                { 'location.city': { $regex: location, $options: 'i' } },
-                { 'location.state': { $regex: location, $options: 'i' } }
-            ];
+            // Checks if either city or state matches
+            andConditions.push({
+                $or: [
+                    { 'location.city': { $regex: location, $options: 'i' } },
+                    { 'location.state': { $regex: location, $options: 'i' } }
+                ]
+            });
         }
-        // If you want a general search bar for names or headlines
+
         if (search) {
-            query.$or = [
-                { firstName: { $regex: search, $options: 'i' } },
-                { lastName: { $regex: search, $options: 'i' } },
-                { proffesionalHeadLine: { $regex: search, $options: 'i' } }
-            ];
+            // General search bar: Checks names and headlines
+            andConditions.push({
+                $or: [
+                    { firstName: { $regex: search, $options: 'i' } },
+                    { lastName: { $regex: search, $options: 'i' } },
+                    { proffesionalHeadLine: { $regex: search, $options: 'i' } } // Kept your spelling!
+                ]
+            });
         }
+
+        // Combine all conditions. If no queries were provided, just match everything ({})
+        const query = andConditions.length > 0 ? { $and: andConditions } : {};
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -490,4 +525,19 @@ const removeSkill = async (req, res) => {
     }
 }
 
-export { createProfile, getProfile, setProfileImage, updateProfile, addEducation, updateEducation, deleteEducation, addExperience, updateExperience, deleteExperience, addSkill, removeSkill, getProfileByUserId, getAlumniDirectory };
+export {
+    createProfile,
+    getProfile,
+    setProfileImage,
+    updateProfile,
+    addEducation,
+    updateEducation,
+    deleteEducation,
+    addExperience,
+    updateExperience,
+    deleteExperience,
+    addSkill,
+    removeSkill,
+    getProfileByUserId,
+    getAlumniDirectory
+};
