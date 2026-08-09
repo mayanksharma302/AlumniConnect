@@ -9,19 +9,42 @@ import Session from "../models/session.model.js";
 import { sendEmail } from "../services/email.service.js";
 import { generateOtp, getOtpHtml } from "../utils/utils.js";
 
-const resendOtp = async (user) => {
-    const otp = generateOtp();
-    const html = getOtpHtml(otp);
+const resendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
 
-    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
 
-    await otps.create({
-        user: user._id,
-        email: user.email,
-        otpHash
-    })
+        const user = await userModel.findOne({ email: email.toLowerCase() });
 
-    await sendEmail(user.email, "OTP Verification", `Your OTP code is ${otp}`, html);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const otp = generateOtp();
+        const html = getOtpHtml(otp);
+        const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+        await otps.create({
+            user: user._id,
+            email: user.email,
+            otpHash
+        });
+
+        await sendEmail(user.email, "OTP Verification", `Your OTP code is ${otp}`, html);
+
+        return res.status(200).json({
+            message: "A fresh verification code has been sent."
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error while resending OTP",
+            error: error.message
+        });
+    }
 }
 
 async function sendOtp(user) {
@@ -167,8 +190,10 @@ const login = async (req, res) => {
     res.status(200).json({
         message: "logged in successfully",
         user: {
+            _id: user._id,
             username: user.username,
-            email: user.email
+            email: user.email,
+            role: user.role
         },
         accessToken
     })
@@ -302,7 +327,8 @@ const verifyEmail = async (req, res) => {
     }
 
     const user = await userModel.findByIdAndUpdate(otpDoc.user, {
-        emailVerified: true
+        emailVerified: true,
+        AccountStatus: 'verified'
     })
 
     await otps.deleteMany({
@@ -314,10 +340,47 @@ const verifyEmail = async (req, res) => {
         user: {
             username: user.username,
             email: user.email,
-            emailVerified: user.emailVerified
+            emailVerified: user.emailVerified,
+            AccountStatus: user.AccountStatus
         }
     })
 
 }
 
-export { registerUser, refreshToken, logout, logoutAll, login, verifyEmail, resendOtp };
+const verifyMember = async (req, res) => {
+    try {
+        if (req.user?.role !== 'admin') {
+            return res.status(403).json({ message: 'Only admins can verify members.' });
+        }
+
+        const { userId } = req.params;
+        const targetUser = await userModel.findById(userId);
+
+        if (!targetUser) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        targetUser.AccountStatus = 'verified';
+        targetUser.emailVerified = true;
+        await targetUser.save();
+
+        return res.status(200).json({
+            message: 'Member verified successfully.',
+            user: {
+                _id: targetUser._id,
+                username: targetUser.username,
+                email: targetUser.email,
+                AccountStatus: targetUser.AccountStatus,
+                emailVerified: targetUser.emailVerified
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Server error while verifying member',
+            error: error.message
+        });
+    }
+};
+
+export { registerUser, refreshToken, logout, logoutAll, login, verifyEmail, resendOtp, verifyMember };

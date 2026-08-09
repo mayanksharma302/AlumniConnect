@@ -11,10 +11,98 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: #F8FAFC;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+  color: #0F172A;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(0, 74, 198, 0.18);
   color: #0F172A;
 }
 
 .active {
   color: #004AC6;
+}
+
+.page-shell {
+  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 100%);
+}
+
+.page-card {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 25px 60px -28px rgba(2, 8, 23, 0.3);
+  backdrop-filter: blur(12px);
+}
+
+.page-title {
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  margin-top: 0.5rem;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #004AC6 0%, #2563eb 100%);
+  color: white;
+  font-weight: 600;
+  padding: 0.8rem 1.2rem;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  box-shadow: 0 12px 25px -12px rgba(0, 74, 198, 0.45);
+}
+
+.primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px -14px rgba(0, 74, 198, 0.5);
+}
+
+.secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: white;
+  color: #334155;
+  font-weight: 600;
+  padding: 0.8rem 1.2rem;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.secondary-btn:hover {
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.form-input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(248, 250, 252, 0.9);
+  padding: 0.85rem 1rem;
+  color: #0f172a;
+  outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.form-input:focus {
+  border-color: #004AC6;
+  box-shadow: 0 0 0 4px rgba(0, 74, 198, 0.12);
+  background: white;
 }
