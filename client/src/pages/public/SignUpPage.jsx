@@ -11,9 +11,9 @@ import {
     GraduationCap,
     Check
 } from "lucide-react";
-import LeftPanel from "../components/auth_page/LeftPannel";
-import RoleCard from "../components/auth_page/RoleCard";
-import TrustLables from "../components/auth_page/TrustLables";
+import LeftPanel from "../../components/auth_page/LeftPannel";
+import RoleCard from "../../components/auth_page/RoleCard";
+import TrustLables from "../../components/auth_page/TrustLables";
 import { Toaster, toast } from 'sonner';
 import { useNavigate } from "react-router-dom";
 
@@ -77,7 +77,7 @@ const SignUpPage = () => {
 
     return (
 
-        <div className="h-screen bg-[#F8F9FF] flex overflow-hidden">
+        <div className="min-h-screen page-shell flex overflow-hidden">
 
             {/* LEFT PANEL */}
             <div className="hidden lg:flex w-[32%] bg-[#004AC6] text-white h-screen sticky top-0">
@@ -91,12 +91,12 @@ const SignUpPage = () => {
 
             {/* RIGHT PANEL */}
             <div className="flex-1 h-screen overflow-y-auto">
-                <div className="min-h-full flex justify-center items-center p-8">
-                    <div className="w-full max-w-lg">
-                        <h1 className="text-4xl font-bold text-center">
+                <div className="min-h-full flex justify-center items-center p-6 sm:p-8">
+                    <div className="w-full max-w-lg page-card rounded-[28px] p-8 sm:p-10">
+                        <h1 className="page-title text-center">
                             Create Account
                         </h1>
-                        <p className="text-center text-gray-500 mt-3">
+                        <p className="page-subtitle text-center">
                             Create your account to get started.
                         </p>
 
@@ -343,7 +343,7 @@ const SignUpPage = () => {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full h-12 rounded-xl bg-[#004AC6] hover:bg-[#003EA8] transition text-white font-semibold"
+                                className="primary-btn w-full h-12"
                             >
                                 {isSubmitting
                                     ? "Creating Account..."

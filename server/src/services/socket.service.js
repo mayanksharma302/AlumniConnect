@@ -13,6 +13,9 @@ const io = new Server(server, {
     }
 });
 
+console.log("🔥 SOCKET.IO SERVER CREATED");
+console.log("🔥 SOCKET.IO PATH:", io.path());
+
 // This object keeps track of who is online. 
 // Format: { "mongodb_user_id": "socket_io_connection_id" }
 const userSocketMap = {};

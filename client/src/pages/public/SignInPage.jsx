@@ -5,15 +5,12 @@ import {
     Eye,
     EyeOff,
     UserRound,
-    Lock,
-    Briefcase,
-    TrendingUp
+    Lock
 } from "lucide-react";
-import TrustLables from "../components/auth_page/TrustLables";
-import LeftPannel from "../components/auth_page/LeftPannel";
+import TrustLables from "../../components/auth_page/TrustLables";
+import LeftPanel from "../../components/auth_page/LeftPannel";
 import { useNavigate } from 'react-router-dom'
 import { toast } from "sonner"
-import LeftPanel from "../components/auth_page/LeftPannel";
 
 const SignIn = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +41,14 @@ const SignIn = () => {
             );
 
             toast.success(response.data.message || "Login successful!");
-            navigate("/upload-profile-image");
+            const storedUser = response.data.user || {};
+            const normalizedUser = {
+                ...storedUser,
+                _id: storedUser._id || storedUser.id,
+                role: storedUser.role || JSON.parse(sessionStorage.getItem('user') || '{}').role
+            };
+            sessionStorage.setItem('user', JSON.stringify(normalizedUser));
+            navigate('/dashboard');
 
         } catch (error) {
 
@@ -80,7 +84,7 @@ const SignIn = () => {
 
 
     return (
-        <div className="min-h-screen bg-[#F8F9FF] flex">
+        <div className="min-h-screen page-shell flex">
 
             {/* LEFT PANEL */}
             <div className="hidden lg:flex w-[32%] bg-[#004AC6] text-white">
@@ -92,12 +96,12 @@ const SignIn = () => {
             </div>
 
             {/* RIGHT PANEL */}
-            <div className="flex-1 flex items-center justify-center">
-                <div className="w-full max-w-md">
-                    <h2 className="text-4xl font-bold text-center">
+            <div className="flex-1 flex items-center justify-center px-6 py-10">
+                <div className="w-full max-w-md page-card rounded-[28px] p-8 sm:p-10">
+                    <h2 className="page-title text-center">
                         Sign In
                     </h2>
-                    <p className="text-center text-gray-500 mt-2">
+                    <p className="page-subtitle text-center">
                         Sign in to access your dashboard.
                     </p>
                     <form
@@ -115,7 +119,7 @@ const SignIn = () => {
                                 <input
                                     type="text"
                                     placeholder="Enter your usename or email address"
-                                    className="w-full border rounded-xl pl-11 pr-4 h-12 outline-none focus:ring-2 focus:ring-[#004AC6]"
+                                    className="form-input pl-11 pr-4 h-12"
                                     {...register("identifier", {
                                         required: "Email or Username is required",
 
@@ -145,7 +149,7 @@ const SignIn = () => {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Enter your password"
-                                    className="w-full border rounded-xl pl-11 pr-11 h-12 outline-none focus:ring-2 focus:ring-[#004AC6]"
+                                    className="form-input pl-11 pr-11 h-12"
                                     {...register("password",
                                         {
                                             required: "Password is required",
@@ -183,7 +187,7 @@ const SignIn = () => {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full h-12 rounded-xl bg-[#004AC6] text-white font-semibold hover:bg-[#0038A8] transition"
+                            className="primary-btn w-full h-12"
                         >
                             {isSubmitting ? "Signing In..." : "Sign In"}
                         </button>
@@ -199,7 +203,7 @@ const SignIn = () => {
                     {/* Register */}
                     <p className="text-center">
                         Don't have an account?{" "}
-                        <a href="/register" className="text-[#004AC6] font-semibold">
+                        <a href="/signup" className="text-[#004AC6] font-semibold">
                             Create Account
                         </a>
                     </p>
