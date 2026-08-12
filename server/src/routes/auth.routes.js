@@ -1,15 +1,12 @@
 import { Router } from "express";
-import {
-    registerUser,
-    refreshToken,
-    logout,
-    logoutAll,
-    login,
-    verifyEmail,
-    resendOtp,
-    verifyMember
-} from "../controllers/auth.controller.js";
-import authMiddleware from "../middlewares/auth.middleware.js";
+import { 
+    registerUser, 
+    refreshToken, 
+    logout, 
+    logoutAll, 
+    login, 
+    verifyEmail, 
+    resendOtp } from "../controllers/auth.controller.js";
 
 const authRouter = Router();
 
@@ -49,10 +46,5 @@ authRouter.get("/logout", logout)
  * @route GET /api/auth/logoutall
  */
 authRouter.get("/logout-all", logoutAll)
-
-/**
- * @route POST /api/auth/verify-member/:userId
- */
-authRouter.post("/verify-member/:userId", authMiddleware, verifyMember)
 
 export default authRouter;

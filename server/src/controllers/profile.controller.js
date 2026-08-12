@@ -149,49 +149,17 @@ const getAlumniDirectory = async (req, res) => {
             });
         }
 
-        const viewerRole = req.user?.role;
-        const viewerId = req.user?._id?.toString();
-
-        const roleFilter = (() => {
-            if (viewerRole === 'student') {
-                return { role: 'alumni' };
-            }
-            if (viewerRole === 'alumni') {
-                return { role: 'student' };
-            }
-            return null;
-        })();
-
-        const visibilityConditions = [
-            { userId: { $ne: viewerId } },
-            { 'userId.role': { $ne: 'admin' } }
-        ];
-
-        if (roleFilter) {
-            visibilityConditions.push({ 'userId.role': roleFilter.role });
-        }
-
-        const query = {
-            ...(andConditions.length > 0 ? { $and: andConditions } : {}),
-            $and: [
-                ...(andConditions.length > 0 ? [] : []),
-                ...visibilityConditions
-            ]
-        };
+        // Combine all conditions. If no queries were provided, just match everything ({})
+        const query = andConditions.length > 0 ? { $and: andConditions } : {};
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
         const profiles = await Profile.find(query)
-            .populate({
-                path: 'userId',
-                select: 'email role',
-                match: roleFilter ? { role: roleFilter.role } : { role: { $ne: 'admin' } }
-            })
+            .populate('userId', 'email role')
             .skip(skip)
             .limit(parseInt(limit));
 
-        const filteredProfiles = profiles.filter(profile => profile.userId !== null);
-        const total = filteredProfiles.length;
+        const total = await Profile.countDocuments(query);
 
         return res.status(200).json({
             success: true,

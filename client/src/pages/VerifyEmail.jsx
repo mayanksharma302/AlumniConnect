@@ -22,7 +22,6 @@ const VerifyEmail = () => {
     const inputRef = useRef(null);
 
     const [timer, setTimer] = useState(300);
-    const [isResending, setIsResending] = useState(false);
 
     const {
         register,
@@ -111,29 +110,9 @@ const VerifyEmail = () => {
 
     };
 
-    const handleResendCode = async () => {
-        const email = sessionStorage.getItem("verificationEmail");
-
-        if (!email) {
-            toast.error("No email was found for verification.");
-            return;
-        }
-
-        setIsResending(true);
-        try {
-            const response = await axios.post("http://localhost:8000/api/auth/sendOtp", { email });
-            toast.success(response.data?.message || "A fresh verification code has been sent.");
-            setTimer(300);
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Unable to resend verification code.");
-        } finally {
-            setIsResending(false);
-        }
-    };
-
 
     return (
-        <div className="min-h-screen page-shell flex">
+        <div className="min-h-screen bg-[#F8F9FF] flex">
 
             {/* LEFT PANEL */}
             <div className="hidden lg:flex w-[32%] bg-[#004AC6] text-white">
@@ -149,13 +128,13 @@ const VerifyEmail = () => {
 
             <div className="flex-1 flex items-center justify-center px-8">
 
-                <div className="w-full max-w-xl page-card rounded-[28px] p-8 sm:p-10">
+                <div className="w-full max-w-xl">
 
-                    <h1 className="page-title">
+                    <h1 className="text-4xl font-bold text-[#181C32]">
                         Email Verification
                     </h1>
 
-                    <p className="page-subtitle">
+                    <p className="mt-2 text-gray-500">
                         We sent a 6-digit verification code to your registered mail.
                     </p>
 
@@ -225,11 +204,10 @@ const VerifyEmail = () => {
 
                             <button
                                 type="button"
-                                disabled={timer > 0 || isResending}
+                                disabled={timer > 0}
                                 className="font-medium text-[#004AC6] disabled:text-gray-400"
-                                onClick={handleResendCode}
                             >
-                                {isResending ? "Sending..." : "Resend Code"}
+                                Resend Code
                             </button>
 
                         </div>
@@ -239,7 +217,7 @@ const VerifyEmail = () => {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="primary-btn mt-8 h-12 w-full disabled:cursor-not-allowed disabled:opacity-70"
+                            className="mt-8 h-12 w-full rounded-xl bg-[#004AC6] text-white font-semibold transition hover:bg-[#0038A8] disabled:cursor-not-allowed disabled:opacity-70"
                         >
                             {isSubmitting ? "Verifying..." : "Verify Email"}
                         </button>
