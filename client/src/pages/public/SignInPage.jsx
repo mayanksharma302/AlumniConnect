@@ -30,25 +30,63 @@ const SignIn = () => {
                 }
             );
 
+            const user = response.data?.user;
+
+            if (!user) {
+                toast.error("Invalid login response.");
+                return;
+            }
+
+            // Store logged-in user
             sessionStorage.setItem(
                 "user",
-                JSON.stringify(response.data.user)
+                JSON.stringify(user)
             );
 
-            sessionStorage.setItem(
-                "accessToken",
-                response.data.accessToken
+            // Store access token
+            if (response.data?.accessToken) {
+                sessionStorage.setItem(
+                    "accessToken",
+                    response.data.accessToken
+                );
+            }
+
+            toast.success(
+                response.data?.message ||
+                "Login successful!"
             );
 
-            toast.success(response.data.message || "Login successful!");
-            const storedUser = response.data.user || {};
-            const normalizedUser = {
-                ...storedUser,
-                _id: storedUser._id || storedUser.id,
-                role: storedUser.role || JSON.parse(sessionStorage.getItem('user') || '{}').role
-            };
-            sessionStorage.setItem('user', JSON.stringify(normalizedUser));
-            navigate('/dashboard');
+            // -----------------------------------------
+            // ROLE BASED REDIRECT
+            // -----------------------------------------
+
+            switch (user.role) {
+
+                case "student":
+                    navigate("/student/dashboard");
+                    break;
+
+                case "alumni":
+                    navigate("/alumni/dashboard");
+                    break;
+
+                case "admin":
+                    navigate("/admin/dashboard");
+                    break;
+
+                default:
+                    console.error(
+                        "Unknown user role:",
+                        user.role
+                    );
+
+                    toast.error(
+                        "Your account role could not be determined."
+                    );
+
+                    sessionStorage.removeItem("user");
+                    sessionStorage.removeItem("accessToken");
+            }
 
         } catch (error) {
 
@@ -56,28 +94,30 @@ const SignIn = () => {
 
                 console.log(error.response);
 
+                const email =
+                    error.response?.data?.user?.email;
 
-                // Store email for Verify Email page
-                sessionStorage.setItem(
-                    "verificationEmail",
-                    error.response.data.user.email
-                );
+                if (email) {
+                    sessionStorage.setItem(
+                        "verificationEmail",
+                        email
+                    );
+                }
 
                 toast.warning(
-                    error.response.data.message ||
+                    error.response?.data?.message ||
                     "Email is not verified."
                 );
 
                 navigate("/verify-email");
 
-            } else {
-
-                toast.error(
-                    error.response?.data?.message ||
-                    "Login failed. Try again."
-                );
-
+                return;
             }
+
+            toast.error(
+                error.response?.data?.message ||
+                "Login failed. Try again."
+            );
         }
     };
 

@@ -1,433 +1,840 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { toast } from 'sonner';
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
 import {
-    Briefcase,
-    Plus,
     Search,
+    SlidersHorizontal,
     MapPin,
-    Calendar,
-    Link as LinkIcon,
-    Trash2,
+    Briefcase,
+    Clock3,
+    Building2,
+    ChevronDown,
     ExternalLink,
-    Clock,
-    UserCheck,
-    Lock
-} from 'lucide-react';
+    UserRound,
+    Users,
+    X,
+} from "lucide-react";
+import { toast } from "sonner";
+
+const API_URL = "http://localhost:8000";
 
 const JobBoard = () => {
-    const [activeTab, setActiveTab] = useState('feed'); // 'feed' | 'post' | 'manage'
     const [jobs, setJobs] = useState([]);
-    const [myJobs, setMyJobs] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
 
-    // Post Job Form States
-    const [company, setCompany] = useState('');
-    const [jobTitle, setJobTitle] = useState('');
-    const [jobDescription, setJobDescription] = useState('');
-    const [requirements, setRequirements] = useState('');
-    const [applyLink, setApplyLink] = useState('');
-    const [validityDays, setValidityDays] = useState(30);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [search, setSearch] = useState("");
+    const [locationFilter, setLocationFilter] = useState("All Locations");
+    const [typeFilter, setTypeFilter] = useState("All Types");
+    const [experienceFilter, setExperienceFilter] = useState("All Experience");
 
-    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-    const token = sessionStorage.getItem('accessToken');
-    const isAlumni = user.role === 'alumni';
+    const [showFilters, setShowFilters] = useState(false);
 
-    const fetchJobs = async () => {
-        if (!token) return;
-        setLoading(true);
-        try {
-            const response = await axios.get('http://localhost:8000/api/jobs/', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (response.data?.success) {
-                setJobs(response.data.data || []);
-            }
-        } catch (err) {
-            console.error('Error fetching jobs', err);
-            toast.error('Unable to fetch job postings.');
-        } finally {
-            setLoading(false);
-        }
+    const user = JSON.parse(
+        sessionStorage.getItem("user") || "{}"
+    );
+
+    const token = sessionStorage.getItem("accessToken");
+
+    const authConfig = {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     };
 
-    const fetchMyJobs = async () => {
-        if (!token || !isAlumni) return;
-        setLoading(true);
-        try {
-            const response = await axios.get('http://localhost:8000/api/jobs/my-jobs', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (response.data?.success) {
-                setMyJobs(response.data.data || []);
-            }
-        } catch (err) {
-            console.error('Error fetching my jobs', err);
-            toast.error('Unable to fetch your job postings.');
-        } finally {
-            setLoading(false);
-        }
-    };
+    /* =====================================================
+       FETCH JOBS
+    ===================================================== */
 
     useEffect(() => {
-        if (activeTab === 'feed') {
-            fetchJobs();
-        } else if (activeTab === 'manage') {
-            fetchMyJobs();
-        }
-    }, [activeTab]);
+        const fetchJobs = async () => {
+            try {
+                setLoading(true);
 
-    const handleCreateJob = async (e) => {
-        e.preventDefault();
-        if (!company || !jobTitle || !jobDescription || !requirements || !applyLink) {
-            toast.error('All fields are required.');
-            return;
-        }
+                const response = await axios.get(
+                    `${API_URL}/api/jobs/`,
+                    authConfig
+                );
 
-        setIsSubmitting(true);
-        try {
-            await axios.post('http://localhost:8000/api/jobs/create', {
-                company,
-                jobTitle,
-                jobDescription,
-                requirements,
-                applyLink,
-                validityDays: parseInt(validityDays) || 30
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+                console.log("Jobs response:", response.data);
 
-            toast.success('Job posting created successfully!');
-            // Reset form
-            setCompany('');
-            setJobTitle('');
-            setJobDescription('');
-            setRequirements('');
-            setApplyLink('');
-            setValidityDays(30);
+                if (response.data?.success) {
+                    setJobs(response.data.data || []);
+                } else {
+                    setJobs([]);
+                }
 
-            // Switch to manage tab
-            setActiveTab('manage');
-        } catch (err) {
-            console.error('Error creating job', err);
-            toast.error(err.response?.data?.message || 'Failed to create job posting.');
-        } finally {
-            setIsSubmitting(false);
-        }
+            } catch (error) {
+                console.error("Fetch jobs error:", error);
+
+                toast.error(
+                    error.response?.data?.message ||
+                    "Unable to load jobs."
+                );
+
+                setJobs([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchJobs();
+    }, []);
+
+    /* =====================================================
+       FILTER OPTIONS
+    ===================================================== */
+
+    const locations = useMemo(() => {
+        const values = jobs
+            .map((job) => job.location)
+            .filter(Boolean);
+
+        return [
+            "All Locations",
+            ...new Set(values),
+        ];
+    }, [jobs]);
+
+    const jobTypes = useMemo(() => {
+        const values = jobs
+            .map((job) => job.jobType)
+            .filter(Boolean);
+
+        return [
+            "All Types",
+            ...new Set(values),
+        ];
+    }, [jobs]);
+
+    const experiences = useMemo(() => {
+        const values = jobs
+            .map((job) => job.experience)
+            .filter(Boolean);
+
+        return [
+            "All Experience",
+            ...new Set(values),
+        ];
+    }, [jobs]);
+
+    /* =====================================================
+       FILTER JOBS
+    ===================================================== */
+
+    const filteredJobs = useMemo(() => {
+        const query = search.trim().toLowerCase();
+
+        return jobs.filter((job) => {
+
+            const searchableText = [
+                job.title,
+                job.company,
+                job.description,
+                job.location,
+                job.jobType,
+                job.experience,
+                job.industry,
+                ...(job.requiredSkills || []),
+                ...(job.preferredSkills || []),
+            ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase();
+
+            const matchesSearch =
+                !query ||
+                searchableText.includes(query);
+
+            const matchesLocation =
+                locationFilter === "All Locations" ||
+                job.location === locationFilter;
+
+            const matchesType =
+                typeFilter === "All Types" ||
+                job.jobType === typeFilter;
+
+            const matchesExperience =
+                experienceFilter === "All Experience" ||
+                job.experience === experienceFilter;
+
+            return (
+                matchesSearch &&
+                matchesLocation &&
+                matchesType &&
+                matchesExperience
+            );
+        });
+    }, [
+        jobs,
+        search,
+        locationFilter,
+        typeFilter,
+        experienceFilter,
+    ]);
+
+    const clearFilters = () => {
+        setSearch("");
+        setLocationFilter("All Locations");
+        setTypeFilter("All Types");
+        setExperienceFilter("All Experience");
     };
 
-    const handleDeleteJob = async (jobId) => {
-        if (!window.confirm('Are you sure you want to delete this job posting?')) return;
+    const hasFilters =
+        search ||
+        locationFilter !== "All Locations" ||
+        typeFilter !== "All Types" ||
+        experienceFilter !== "All Experience";
 
-        try {
-            await axios.delete(`http://localhost:8000/api/jobs/${jobId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            toast.success('Job posting deleted.');
-            fetchMyJobs();
-        } catch (err) {
-            console.error('Error deleting job', err);
-            toast.error('Failed to delete job posting.');
-        }
-    };
+    /* =====================================================
+       LOADING
+    ===================================================== */
 
-    // Filter jobs locally based on search term
-    const filteredJobs = jobs.filter(job => {
-        const term = searchTerm.toLowerCase();
+    if (loading) {
         return (
-            job.jobTitle?.toLowerCase().includes(term) ||
-            job.company?.toLowerCase().includes(term) ||
-            job.jobDescription?.toLowerCase().includes(term) ||
-            job.requirements?.toLowerCase().includes(term)
-        );
-    });
+            <div className="min-h-full bg-[#F8F9FF] p-4 sm:p-6">
 
-    const formatDate = (dateString) => {
-        if (!dateString) return '';
-        const d = new Date(dateString);
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    };
+                <div className="mx-auto max-w-7xl">
+
+                    <div className="animate-pulse">
+
+                        <div className="h-7 w-48 rounded bg-gray-200" />
+
+                        <div className="mt-2 h-4 w-80 rounded bg-gray-100" />
+
+                        <div className="mt-6 h-12 rounded-xl bg-white shadow-sm" />
+
+                        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+
+                            {[1, 2, 3, 4, 5, 6].map((item) => (
+                                <div
+                                    key={item}
+                                    className="h-72 rounded-xl border border-gray-200 bg-white p-5"
+                                >
+                                    <div className="h-10 w-10 rounded-lg bg-gray-200" />
+
+                                    <div className="mt-5 h-5 w-3/4 rounded bg-gray-200" />
+
+                                    <div className="mt-2 h-4 w-1/2 rounded bg-gray-100" />
+
+                                    <div className="mt-6 h-20 rounded-lg bg-gray-100" />
+
+                                    <div className="mt-6 h-9 rounded-lg bg-gray-200" />
+                                </div>
+                            ))}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        );
+    }
+
+    /* =====================================================
+       PAGE
+    ===================================================== */
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto animate-fade-in pb-12">
-            {/* Page Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Job Board & Referrals</h1>
-                    <p className="text-sm text-gray-500 mt-1">Explore job postings shared directly by alumni, or request referrals.</p>
-                </div>
-            </div>
+        <div className="min-h-full bg-[#F8F9FF] px-4 py-5 sm:px-6 lg:px-8">
 
-            {/* Stepper / Tab Headers */}
-            <div className="flex border-b border-gray-200">
-                <button
-                    onClick={() => setActiveTab('feed')}
-                    className={`pb-3.5 px-6 text-sm font-bold border-b-2 transition ${activeTab === 'feed'
-                        ? 'border-[#004AC6] text-[#004AC6]'
-                        : 'border-transparent text-gray-500 hover:text-gray-900'
-                        }`}
-                >
-                    All Jobs Feed
-                </button>
+            <div className="mx-auto max-w-7xl">
 
-                {isAlumni && (
-                    <>
-                        <button
-                            onClick={() => setActiveTab('post')}
-                            className={`pb-3.5 px-6 text-sm font-bold border-b-2 transition ${activeTab === 'post'
-                                ? 'border-[#004AC6] text-[#004AC6]'
-                                : 'border-transparent text-gray-500 hover:text-gray-900'
-                                }`}
-                        >
-                            Post a Job
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('manage')}
-                            className={`pb-3.5 px-6 text-sm font-bold border-b-2 transition ${activeTab === 'manage'
-                                ? 'border-[#004AC6] text-[#004AC6]'
-                                : 'border-transparent text-gray-500 hover:text-gray-900'
-                                }`}
-                        >
-                            My Posted Jobs
-                        </button>
-                    </>
-                )}
-            </div>
+                {/* =================================================
+                    HEADER
+                ================================================= */}
 
-            {/* Tab Contents */}
-            {activeTab === 'feed' && (
-                <div className="space-y-6">
-                    {/* Search Bar */}
-                    <div className="relative">
-                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full h-12 border pl-11 pr-4 rounded-xl outline-none focus:ring-2 focus:ring-blue-100 focus:border-[#004AC6] transition text-sm bg-white shadow-sm"
-                            placeholder="Search by job title, company, skills..."
-                        />
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+
+                    <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#004AC6]">
+                            Career Opportunities
+                        </p>
+
+                        <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                            Jobs & Referrals
+                        </h1>
+
+                        <p className="mt-1 text-sm text-gray-500">
+                            Explore opportunities shared by alumni and discover your next career move.
+                        </p>
                     </div>
 
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 page-card rounded-3xl shadow-sm">
-                            <div className="w-10 h-10 border-4 border-[#004AC6] border-t-transparent rounded-full animate-spin" />
-                            <p className="text-xs text-gray-400 font-semibold mt-3">Fetching postings...</p>
+                    <div className="flex items-center gap-2">
+
+                        <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm">
+                            {filteredJobs.length} Opportunities
                         </div>
-                    ) : filteredJobs.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {filteredJobs.map((job) => (
-                                <div key={job._id} className="page-card rounded-3xl shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition duration-200">
-                                    <div className="space-y-4">
-                                        {/* Header */}
-                                        <div className="flex justify-between items-start gap-2">
-                                            <div>
-                                                <h3 className="font-extrabold text-gray-900 text-lg leading-snug">{job.jobTitle}</h3>
-                                                <p className="text-sm font-semibold text-[#004AC6] mt-0.5">{job.company}</p>
-                                            </div>
-                                            <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full flex items-center gap-1">
-                                                <Clock size={10} /> Active
-                                            </span>
-                                        </div>
 
-                                        {/* Description */}
-                                        <p className="text-xs text-gray-600 leading-relaxed line-clamp-3">{job.jobDescription}</p>
-
-                                        {/* Requirements chips */}
-                                        {job.requirements && (
-                                            <div className="space-y-1.5">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Requirements</span>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {job.requirements.split(',').map((req, rIdx) => (
-                                                        <span key={rIdx} className="text-[10px] bg-gray-50 border px-2.5 py-0.5 rounded-md font-medium text-gray-600">
-                                                            {req.trim()}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Footer Info */}
-                                    <div className="flex flex-wrap justify-between items-center gap-3 mt-6 border-t pt-4 text-[10px] text-gray-400 font-semibold">
-                                        <div className="flex items-center gap-2">
-                                            {job.postedBy?.profilePicture ? (
-                                                <img src={job.postedBy.profilePicture} alt="User" className="w-5 h-5 rounded-full object-cover" />
-                                            ) : (
-                                                <div className="w-5 h-5 rounded-full bg-[#004AC6] text-white flex items-center justify-center text-[8px] font-bold">
-                                                    {job.postedBy?.firstName?.[0] || 'A'}
-                                                </div>
-                                            )}
-                                            <span>Posted by {job.postedBy ? `${job.postedBy.firstName} ${job.postedBy.lastName || ''}` : 'Alumni'}</span>
-                                        </div>
-
-                                        <a
-                                            href={job.applyLink}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="h-8 px-4 bg-[#004AC6] hover:bg-[#0038A8] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition"
-                                        >
-                                            Apply <ExternalLink size={12} />
-                                        </a>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-20 page-card rounded-3xl shadow-sm">
-                            <Briefcase size={40} className="mx-auto text-gray-400 animate-pulse" />
-                            <p className="text-sm font-semibold text-gray-600 mt-3">No jobs found matching your search.</p>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {activeTab === 'post' && isAlumni && (
-                <div className="page-card rounded-3xl p-8 max-w-2xl mx-auto space-y-6">
-                    <div className="border-b pb-4">
-                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Plus size={20} className="text-[#004AC6]" /> Post a New Referral Job
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1">Fill out the job details to share with the students and alumni community.</p>
                     </div>
 
-                    <form onSubmit={handleCreateJob} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider">Company Name *</label>
-                                <input
-                                    type="text"
-                                    value={company}
-                                    onChange={(e) => setCompany(e.target.value)}
-                                    placeholder="e.g. Stripe"
-                                    className="mt-1.5 w-full border rounded-xl h-11 px-4 text-xs outline-none focus:border-[#004AC6] focus:ring-1 focus:ring-[#004AC6]"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider">Job Title *</label>
-                                <input
-                                    type="text"
-                                    value={jobTitle}
-                                    onChange={(e) => setJobTitle(e.target.value)}
-                                    placeholder="e.g. Frontend Engineer Intern"
-                                    className="mt-1.5 w-full border rounded-xl h-11 px-4 text-xs outline-none focus:border-[#004AC6] focus:ring-1 focus:ring-[#004AC6]"
-                                    required
-                                />
-                            </div>
-                        </div>
+                </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider">Job Description *</label>
-                            <textarea
-                                value={jobDescription}
-                                onChange={(e) => setJobDescription(e.target.value)}
-                                placeholder="Describe the role, day-to-day work, and candidate expectations..."
-                                className="mt-1.5 w-full border rounded-xl p-4 text-xs outline-none focus:border-[#004AC6] focus:ring-1 focus:ring-[#004AC6] h-32 resize-none"
-                                required
+
+                {/* =================================================
+                    SEARCH / FILTER BAR
+                ================================================= */}
+
+                <div className="mt-6 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+
+                    <div className="flex flex-col gap-3 lg:flex-row">
+
+                        {/* SEARCH */}
+
+                        <div className="relative flex-1">
+
+                            <Search
+                                size={17}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                             />
-                        </div>
 
-                        <div>
-                            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider">Key Requirements *</label>
                             <input
                                 type="text"
-                                value={requirements}
-                                onChange={(e) => setRequirements(e.target.value)}
-                                placeholder="e.g. React, Node.js, 1+ year experience (comma separated)"
-                                className="mt-1.5 w-full border rounded-xl h-11 px-4 text-xs outline-none focus:border-[#004AC6] focus:ring-1 focus:ring-[#004AC6]"
-                                required
+                                value={search}
+                                onChange={(e) =>
+                                    setSearch(e.target.value)
+                                }
+                                placeholder="Search jobs, companies, skills..."
+                                className="h-11 w-full rounded-lg border border-gray-200 bg-[#FAFBFF] pl-10 pr-10 text-sm text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-[#004AC6] focus:bg-white focus:ring-2 focus:ring-blue-100"
                             />
+
+                            {search && (
+                                <button
+                                    onClick={() => setSearch("")}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
+
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider">Application Link / URL *</label>
-                                <input
-                                    type="url"
-                                    value={applyLink}
-                                    onChange={(e) => setApplyLink(e.target.value)}
-                                    placeholder="e.g. https://company.com/careers/job"
-                                    className="mt-1.5 w-full border rounded-xl h-11 px-4 text-xs outline-none focus:border-[#004AC6] focus:ring-1 focus:ring-[#004AC6]"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider">Validity (Days) *</label>
-                                <input
-                                    type="number"
-                                    value={validityDays}
-                                    onChange={(e) => setValidityDays(e.target.value)}
-                                    placeholder="30"
-                                    className="mt-1.5 w-full border rounded-xl h-11 px-4 text-xs outline-none focus:border-[#004AC6] focus:ring-1 focus:ring-[#004AC6]"
-                                    min="1"
-                                    required
-                                />
-                            </div>
-                        </div>
+
+                        {/* FILTER BUTTON */}
 
                         <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full h-11 bg-[#004AC6] hover:bg-[#0038A8] text-white font-semibold rounded-xl text-sm transition shadow-md flex items-center justify-center gap-1.5 disabled:opacity-75"
+                            onClick={() =>
+                                setShowFilters((value) => !value)
+                            }
+                            className={`flex h-11 items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold shadow-sm transition ${showFilters
+                                ? "border-[#004AC6] bg-blue-50 text-[#004AC6]"
+                                : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                                }`}
                         >
-                            {isSubmitting ? 'Posting Referral...' : 'Post Job Referral'}
+                            <SlidersHorizontal size={16} />
+                            Filters
                         </button>
-                    </form>
-                </div>
-            )}
 
-            {activeTab === 'manage' && isAlumni && (
-                <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-gray-900 px-1">Manage Posted Referrals</h3>
+                    </div>
 
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 page-card rounded-3xl shadow-sm">
-                            <div className="w-10 h-10 border-4 border-[#004AC6] border-t-transparent rounded-full animate-spin" />
-                            <p className="text-xs text-gray-400 font-semibold mt-3">Loading posted jobs...</p>
-                        </div>
-                    ) : myJobs.length > 0 ? (
-                        <div className="divide-y page-card rounded-3xl overflow-hidden">
-                            {myJobs.map((job) => (
-                                <div key={job._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 hover:bg-gray-50/50 transition">
-                                    <div>
-                                        <h4 className="font-bold text-gray-900 text-sm">{job.jobTitle}</h4>
-                                        <p className="text-xs font-semibold text-gray-500 mt-0.5">{job.company}</p>
-                                        <span className="text-[10px] text-gray-400 block font-semibold mt-1">Expiry Date: {formatDate(job.expiresAt)}</span>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <a
-                                            href={job.applyLink}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="h-8 px-3 border rounded-lg hover:bg-gray-50 text-xs font-semibold flex items-center justify-center gap-1.5"
-                                        >
-                                            View Link <ExternalLink size={12} />
-                                        </a>
-                                        <button
-                                            onClick={() => handleDeleteJob(job._id)}
-                                            className="h-8 px-3 border border-red-100 hover:bg-red-50 text-red-500 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition"
-                                        >
-                                            <Trash2 size={14} /> Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-16 page-card rounded-3xl">
-                            <Briefcase size={36} className="mx-auto text-gray-300" />
-                            <p className="text-xs text-gray-400 mt-2 font-semibold">You have not posted any job referrals yet.</p>
-                            <button onClick={() => setActiveTab('post')} className="mt-3 text-xs bg-[#004AC6] text-white px-4 py-2 font-bold rounded-lg hover:bg-[#0038A8] transition shadow-sm">
-                                Post a Job
-                            </button>
+
+                    {/* FILTERS */}
+
+                    {showFilters && (
+                        <div className="mt-3 grid grid-cols-1 gap-3 border-t border-gray-100 pt-3 sm:grid-cols-3">
+
+                            <FilterSelect
+                                label="Location"
+                                value={locationFilter}
+                                options={locations}
+                                onChange={setLocationFilter}
+                            />
+
+                            <FilterSelect
+                                label="Job Type"
+                                value={typeFilter}
+                                options={jobTypes}
+                                onChange={setTypeFilter}
+                            />
+
+                            <FilterSelect
+                                label="Experience"
+                                value={experienceFilter}
+                                options={experiences}
+                                onChange={setExperienceFilter}
+                            />
+
                         </div>
                     )}
+
+
+                    {/* ACTIVE FILTERS */}
+
+                    {hasFilters && (
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+
+                            <span className="text-xs font-medium text-gray-400">
+                                Active filters:
+                            </span>
+
+                            {search && (
+                                <FilterTag
+                                    text={`"${search}"`}
+                                    onRemove={() => setSearch("")}
+                                />
+                            )}
+
+                            {locationFilter !== "All Locations" && (
+                                <FilterTag
+                                    text={locationFilter}
+                                    onRemove={() =>
+                                        setLocationFilter("All Locations")
+                                    }
+                                />
+                            )}
+
+                            {typeFilter !== "All Types" && (
+                                <FilterTag
+                                    text={typeFilter}
+                                    onRemove={() =>
+                                        setTypeFilter("All Types")
+                                    }
+                                />
+                            )}
+
+                            {experienceFilter !== "All Experience" && (
+                                <FilterTag
+                                    text={experienceFilter}
+                                    onRemove={() =>
+                                        setExperienceFilter("All Experience")
+                                    }
+                                />
+                            )}
+
+                            <button
+                                onClick={clearFilters}
+                                className="ml-1 text-xs font-semibold text-[#004AC6] hover:underline"
+                            >
+                                Clear all
+                            </button>
+
+                        </div>
+                    )}
+
                 </div>
-            )}
+
+
+                {/* =================================================
+                    RESULTS HEADER
+                ================================================= */}
+
+                <div className="mt-6 flex items-center justify-between">
+
+                    <div>
+
+                        <h2 className="text-sm font-bold text-gray-900">
+                            Recommended Opportunities
+                        </h2>
+
+                        <p className="mt-1 text-xs text-gray-500">
+                            {filteredJobs.length} jobs available
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {/* =================================================
+                    EMPTY STATE
+                ================================================= */}
+
+                {filteredJobs.length === 0 ? (
+
+                    <div className="mt-5 rounded-xl border border-gray-200 bg-white px-6 py-16 text-center shadow-sm">
+
+                        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-[#004AC6]">
+                            <Briefcase size={24} />
+                        </div>
+
+                        <h3 className="mt-4 text-base font-bold text-gray-800">
+                            No opportunities found
+                        </h3>
+
+                        <p className="mx-auto mt-1 max-w-md text-sm text-gray-500">
+                            Try changing your search or filters to find more job opportunities.
+                        </p>
+
+                        {hasFilters && (
+                            <button
+                                onClick={clearFilters}
+                                className="mt-5 rounded-lg border border-[#004AC6] bg-[#004AC6] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#003da8] hover:shadow-md"
+                            >
+                                Clear Filters
+                            </button>
+                        )}
+
+                    </div>
+
+                ) : (
+
+                    /* =================================================
+                       JOB GRID
+                    ================================================= */
+
+                    <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+
+                        {filteredJobs.map((job) => (
+                            <JobCard
+                                key={job._id}
+                                job={job}
+                            />
+                        ))}
+
+                    </div>
+
+                )}
+
+            </div>
+
         </div>
+    );
+};
+
+
+/* =========================================================
+   JOB CARD
+========================================================= */
+
+const JobCard = ({ job }) => {
+
+    const title =
+        job.title ||
+        job.jobTitle ||
+        "Untitled Position";
+
+    const company =
+        job.company ||
+        job.companyName ||
+        "Company not specified";
+
+    const location =
+        job.location ||
+        "Location not specified";
+
+    const jobType =
+        job.jobType ||
+        job.type ||
+        "Not specified";
+
+    const experience =
+        job.experience ||
+        "Not specified";
+
+    const industry =
+        job.industry ||
+        "Technology";
+
+    const requiredSkills =
+        job.requiredSkills ||
+        job.skills ||
+        [];
+
+    const preferredSkills =
+        job.preferredSkills ||
+        [];
+
+    const skills = [
+        ...requiredSkills,
+        ...preferredSkills,
+    ].slice(0, 5);
+
+    const postedBy =
+        job.postedBy ||
+        job.createdBy ||
+        job.userId;
+
+    const postedName =
+        postedBy?.firstName
+            ? `${postedBy.firstName} ${postedBy.lastName || ""}`.trim()
+            : postedBy?.username ||
+            "Alumni Member";
+
+    const companyInitial =
+        company
+            .charAt(0)
+            .toUpperCase();
+
+    return (
+        <article className="group flex min-h-[365px] flex-col rounded-xl border border-gray-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+
+            {/* CARD TOP */}
+
+            <div className="border-b border-gray-100 p-5">
+
+                <div className="flex items-start justify-between gap-3">
+
+                    <div className="flex min-w-0 items-center gap-3">
+
+                        {/* COMPANY LOGO */}
+
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 text-sm font-bold text-[#004AC6]">
+
+                            {job.companyLogo ||
+                                job.logo ? (
+                                <img
+                                    src={
+                                        job.companyLogo ||
+                                        job.logo
+                                    }
+                                    alt={company}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                companyInitial
+                            )}
+
+                        </div>
+
+
+                        <div className="min-w-0">
+
+                            <h3 className="truncate text-base font-bold text-gray-900">
+                                {title}
+                            </h3>
+
+                            <p className="mt-0.5 truncate text-xs font-medium text-gray-500">
+                                {company}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* JOB TYPE */}
+
+                    <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-semibold text-[#004AC6]">
+                        {jobType}
+                    </span>
+
+                </div>
+
+
+                {/* META */}
+
+                <div className="mt-5 grid grid-cols-2 gap-2">
+
+                    <MetaItem
+                        icon={<MapPin size={13} />}
+                        value={location}
+                    />
+
+                    <MetaItem
+                        icon={<Clock3 size={13} />}
+                        value={experience}
+                    />
+
+                    <MetaItem
+                        icon={<Building2 size={13} />}
+                        value={industry}
+                    />
+
+                    <MetaItem
+                        icon={<Briefcase size={13} />}
+                        value="Referral Available"
+                    />
+
+                </div>
+
+            </div>
+
+
+            {/* CARD BODY */}
+
+            <div className="flex flex-1 flex-col p-5">
+
+                {/* DESCRIPTION */}
+
+                {job.description && (
+                    <p className="line-clamp-3 text-xs leading-5 text-gray-500">
+                        {job.description}
+                    </p>
+                )}
+
+
+                {/* SKILLS */}
+
+                {skills.length > 0 && (
+                    <div className="mt-4">
+
+                        <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-gray-400">
+                            Skills
+                        </p>
+
+                        <div className="flex flex-wrap gap-1.5">
+
+                            {skills.map((skill, index) => (
+                                <span
+                                    key={`${skill}-${index}`}
+                                    className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-[10px] font-medium text-gray-600"
+                                >
+                                    {skill}
+                                </span>
+                            ))}
+
+                        </div>
+
+                    </div>
+                )}
+
+
+                {/* POSTED BY */}
+
+                <div className="mt-auto border-t border-gray-100 pt-4">
+
+                    <div className="flex items-center gap-2">
+
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-[#004AC6]">
+                            <UserRound size={13} />
+                        </div>
+
+                        <div className="min-w-0">
+
+                            <p className="text-[9px] font-medium uppercase tracking-wide text-gray-400">
+                                Posted by
+                            </p>
+
+                            <p className="truncate text-xs font-semibold text-gray-700">
+                                {postedName}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* ACTIONS */}
+
+                    <div className="mt-4 flex gap-2">
+
+                        <Link
+                            to={`/student/jobs/${job._id}`}
+                            state={{ job }}
+                            className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#004AC6] bg-white text-xs font-semibold text-[#004AC6] shadow-sm transition hover:bg-blue-50 hover:shadow-md"
+                        >
+                            View Details
+                        </Link>
+
+
+                        {job.applyLink ? (
+                            <a
+                                href={job.applyLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#003da8] bg-[#004AC6] text-xs font-semibold text-white shadow-sm transition hover:bg-[#003da8] hover:shadow-md"
+                            >
+                                Apply
+                                <ExternalLink size={13} />
+                            </a>
+                        ) : (
+                            <Link
+                                to={`/student/jobs/${job._id}`}
+                                className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#003da8] bg-[#004AC6] text-xs font-semibold text-white shadow-sm transition hover:bg-[#003da8] hover:shadow-md"
+                            >
+                                Request Referral
+                            </Link>
+                        )}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+    );
+};
+
+
+/* =========================================================
+   META ITEM
+========================================================= */
+
+const MetaItem = ({ icon, value }) => {
+    return (
+        <div className="flex min-w-0 items-center gap-1.5 rounded-md border border-gray-100 bg-gray-50 px-2.5 py-2">
+
+            <span className="shrink-0 text-[#004AC6]">
+                {icon}
+            </span>
+
+            <span className="truncate text-[10px] font-medium text-gray-600">
+                {value}
+            </span>
+
+        </div>
+    );
+};
+
+
+/* =========================================================
+   FILTER SELECT
+========================================================= */
+
+const FilterSelect = ({
+    label,
+    value,
+    options,
+    onChange,
+}) => {
+    return (
+        <label className="relative block">
+
+            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+                {label}
+            </span>
+
+            <div className="relative">
+
+                <select
+                    value={value}
+                    onChange={(e) =>
+                        onChange(e.target.value)
+                    }
+                    className="h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white px-3 pr-9 text-xs font-medium text-gray-600 outline-none focus:border-[#004AC6] focus:ring-2 focus:ring-blue-100"
+                >
+                    {options.map((option) => (
+                        <option
+                            key={option}
+                            value={option}
+                        >
+                            {option}
+                        </option>
+                    ))}
+                </select>
+
+                <ChevronDown
+                    size={15}
+                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+
+            </div>
+
+        </label>
+    );
+};
+
+
+/* =========================================================
+   FILTER TAG
+========================================================= */
+
+const FilterTag = ({ text, onRemove }) => {
+    return (
+        <span className="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-medium text-[#004AC6]">
+
+            {text}
+
+            <button
+                onClick={onRemove}
+                className="rounded-full hover:bg-blue-100"
+            >
+                <X size={11} />
+            </button>
+
+        </span>
     );
 };
 

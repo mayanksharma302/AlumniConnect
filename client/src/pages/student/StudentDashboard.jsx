@@ -14,7 +14,7 @@ import {
 
 const API_URL = "http://localhost:8000/api";
 
-const Dashboard = () => {
+const StudentDashboard = () => {
     const [profile, setProfile] = useState(null);
     const [recommendedAlumni, setRecommendedAlumni] = useState([]);
     const [jobs, setJobs] = useState([]);
@@ -66,9 +66,22 @@ const Dashboard = () => {
                 axios
                     .get(`${API_URL}/profile/alumni-directory?limit=3`, authConfig)
                     .then((res) => {
-                        setRecommendedAlumni(res.data?.profiles || []);
+
+                        const profiles = res.data?.profiles || [];
+
+                        // Student portal can only display alumni.
+                        const alumniOnly = profiles.filter(
+                            (profile) =>
+                                profile.role === "alumni" ||
+                                profile.userId?.role === "alumni"
+                        );
+
+                        setRecommendedAlumni(alumniOnly);
                     })
-                    .catch((err) => console.error("Alumni directory:", err)),
+                    .catch((err) => {
+                        console.error("Alumni directory:", err);
+                        setRecommendedAlumni([]);
+                    }),
 
                 axios
                     .get(`${API_URL}/jobs/`, authConfig)
@@ -218,14 +231,14 @@ const Dashboard = () => {
 
                     <div className="flex gap-3 mt-3">
                         <Link
-                            to="/directory"
+                            to="/student/directory"
                             className="rounded-md bg-white px-4 py-3 text-[13px] font-semibold text-[#2563eb] hover:bg-gray-50"
                         >
                             Browse Alumni
                         </Link>
 
                         <Link
-                            to="/jobs"
+                            to="/student/jobs"
                             className="rounded-md border border-white/30 bg-white/10 px-4 py-3 text-[13px] font-semibold text-white hover:bg-white/20"
                         >
                             Browse Jobs
@@ -272,22 +285,22 @@ const Dashboard = () => {
                 <QuickAction
                     icon={<UserRoundPlus size={14} />}
                     label="Find Mentor"
-                    to="/mentorship"
+                    to="/student/mentorship"
                 />
                 <QuickAction
                     icon={<BriefcaseBusiness size={14} />}
                     label="Browse Jobs"
-                    to="/jobs"
+                    to="/student/jobs"
                 />
                 <QuickAction
                     icon={<CalendarDays size={14} />}
                     label="Upcoming Events"
-                    to="/events"
+                    to="/student/events"
                 />
                 <QuickAction
                     icon={<MessageSquare size={14} />}
                     label="Messages"
-                    to="/messages"
+                    to="/student/messages"
                 />
             </section>
 
@@ -376,7 +389,7 @@ const Dashboard = () => {
                         </p>
 
                         <Link
-                            to="/profile"
+                            to="/student/profile"
                             className="mt-2 w-full rounded-md bg-[#004ac6] py-3 text-center text-[13px] font-semibold text-white hover:bg-[#0039a6]"
                         >
                             Complete your profile
@@ -471,7 +484,7 @@ const Dashboard = () => {
                                     </p>
 
                                     <Link
-                                        to="/events"
+                                        to="/student/events"
                                         className="text-[10px] font-medium text-[#2563eb]"
                                     >
                                         View Event
@@ -507,7 +520,7 @@ const Dashboard = () => {
                         return (
                             <Link
                                 key={conversation._id}
-                                to="/messages"
+                                to="/student/messages"
                                 className="flex items-center gap-4 border-b border-gray-100 py-3 last:border-b-0 hover:bg-gray-50 transition"
                             >
                                 {other?.profilePicture ? (
@@ -547,7 +560,7 @@ const Dashboard = () => {
             </section>
 
             <Link
-                to="/profile"
+                to="/student/profile"
                 className="fixed bottom-5 right-5 flex h-11 w-11 items-center justify-center rounded-full bg-[#004ac6] text-white shadow-lg hover:bg-[#0039a6]"
                 title="Edit profile"
             >
@@ -714,7 +727,7 @@ const AlumniCard = ({ alumni }) => {
                     </Link>
 
                     <Link
-                        to="/mentorship"
+                        to="/student/mentorship"
                         className="rounded bg-[#004ac6] py-1.5 text-center text-[11px] font-semibold text-white"
                     >
                         Request Mentorship
@@ -738,4 +751,4 @@ const EmptyInline = ({ text }) => (
     </div>
 );
 
-export default Dashboard;
+export default StudentDashboard;

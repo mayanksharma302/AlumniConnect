@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link, Outlet } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
 import {
@@ -18,7 +18,7 @@ import {
     Bell
 } from 'lucide-react';
 
-const DashboardLayout = ({ children }) => {
+const StudentLayout = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -78,13 +78,41 @@ const DashboardLayout = ({ children }) => {
     };
 
     const menuItems = [
-        { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-        { name: 'Alumni Directory', path: '/directory', icon: <Users size={20} /> },
-        { name: 'Job Board', path: '/jobs', icon: <Briefcase size={20} /> },
-        { name: 'Events', path: '/events', icon: <Calendar size={20} /> },
-        { name: 'Mentorship', path: '/mentorship', icon: <Handshake size={20} /> },
-        { name: 'Messages', path: '/messages', icon: <MessageSquare size={20} /> },
-        { name: 'My Profile', path: '/profile', icon: <User size={20} /> },
+        {
+            name: "Dashboard",
+            path: "/student/dashboard",
+            icon: <LayoutDashboard size={20} />,
+        },
+        {
+            name: "Alumni Directory",
+            path: "/student/directory",
+            icon: <Users size={20} />,
+        },
+        {
+            name: "Job Board",
+            path: "/student/jobs",
+            icon: <Briefcase size={20} />,
+        },
+        {
+            name: "Events",
+            path: "/student/events",
+            icon: <Calendar size={20} />,
+        },
+        {
+            name: "Mentorship",
+            path: "/student/mentorship",
+            icon: <Handshake size={20} />,
+        },
+        {
+            name: "Messages",
+            path: "/student/messages",
+            icon: <MessageSquare size={20} />,
+        },
+        {
+            name: "My Profile",
+            path: "/student/profile",
+            icon: <User size={20} />,
+        },
     ];
 
     const currentTitle = menuItems.find(item => location.pathname === item.path)?.name || 'AlumniConnect';
@@ -258,7 +286,7 @@ const DashboardLayout = ({ children }) => {
                                     />
                                     <div className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-lg z-30 py-1.5">
                                         <Link
-                                            to="/profile"
+                                            to="/student/profile"
                                             onClick={() => setDropdownOpen(false)}
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium"
                                         >
@@ -292,11 +320,11 @@ const DashboardLayout = ({ children }) => {
 
                 {/* Sub Content */}
                 <main className="flex-1 overflow-y-auto p-6">
-                    {children}
+                    <Outlet />
                 </main>
             </div>
         </div>
     );
 };
 
-export default DashboardLayout;
+export default StudentLayout;

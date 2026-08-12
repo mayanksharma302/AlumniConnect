@@ -72,9 +72,21 @@ const AlumniDirectory = () => {
             );
 
             if (response.data?.success) {
-                setProfiles(response.data.profiles || []);
+
+                const alumniOnly = (response.data.profiles || []).filter(
+                    (profile) =>
+                        profile.userId?.role === "alumni" ||
+                        profile.role === "alumni"
+                );
+
+                setProfiles(alumniOnly);
+
                 setTotalPages(response.data.totalPages || 1);
-                setTotalResults(response.data.total || 0);
+
+                setTotalResults(
+                    response.data.total || alumniOnly.length
+                );
+
                 setPage(pageNumber);
             }
         } catch (error) {
@@ -190,8 +202,8 @@ const AlumniDirectory = () => {
                                     setShowFilters((value) => !value)
                                 }
                                 className={`flex h-10 items-center justify-center gap-2 rounded-lg border px-4 text-xs font-semibold shadow-sm transition ${showFilters
-                                        ? "border-blue-200 bg-blue-50 text-[#004AC6]"
-                                        : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                                    ? "border-blue-200 bg-blue-50 text-[#004AC6]"
+                                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                                     }`}
                             >
                                 <SlidersHorizontal size={14} />
@@ -210,8 +222,8 @@ const AlumniDirectory = () => {
                         {/* FILTERS */}
                         <div
                             className={`mt-4 overflow-hidden transition-all ${showFilters
-                                    ? "max-h-[500px] opacity-100"
-                                    : "max-h-0 opacity-0"
+                                ? "max-h-[500px] opacity-100"
+                                : "max-h-0 opacity-0"
                                 }`}
                         >
 
@@ -384,8 +396,8 @@ const AlumniDirectory = () => {
                         <button
                             onClick={() => setView("grid")}
                             className={`flex h-8 w-8 items-center justify-center rounded-lg border shadow-sm ${view === "grid"
-                                    ? "border-blue-200 bg-blue-50 text-[#004AC6]"
-                                    : "border-gray-200 bg-white text-gray-400"
+                                ? "border-blue-200 bg-blue-50 text-[#004AC6]"
+                                : "border-gray-200 bg-white text-gray-400"
                                 }`}
                         >
                             <Grid3X3 size={14} />
@@ -394,8 +406,8 @@ const AlumniDirectory = () => {
                         <button
                             onClick={() => setView("list")}
                             className={`flex h-8 w-8 items-center justify-center rounded-lg border shadow-sm ${view === "list"
-                                    ? "border-blue-200 bg-blue-50 text-[#004AC6]"
-                                    : "border-gray-200 bg-white text-gray-400"
+                                ? "border-blue-200 bg-blue-50 text-[#004AC6]"
+                                : "border-gray-200 bg-white text-gray-400"
                                 }`}
                         >
                             <List size={14} />
@@ -416,17 +428,23 @@ const AlumniDirectory = () => {
                                 : "mt-4 space-y-3"
                         }
                     >
-                        {profiles.map((profile) => (
-                            <ProfileCard
-                                key={profile._id}
-                                profile={profile}
-                                listView={view === "list"}
-                                getName={getName}
-                                getInitials={getInitials}
-                                getLocation={getLocation}
-                                getUserId={getUserId}
-                            />
-                        ))}
+                        {profiles
+                            .filter(
+                                (profile) =>
+                                    profile.userId?.role === "alumni" ||
+                                    profile.role === "alumni"
+                            )
+                            .map((profile) => (
+                                <ProfileCard
+                                    key={profile._id}
+                                    profile={profile}
+                                    listView={view === "list"}
+                                    getName={getName}
+                                    getInitials={getInitials}
+                                    getLocation={getLocation}
+                                    getUserId={getUserId}
+                                />
+                            ))}
                     </div>
                 ) : (
                     <div className="mt-4 rounded-xl border border-gray-200 bg-white py-20 text-center shadow-sm">
@@ -490,8 +508,8 @@ const AlumniDirectory = () => {
                                 key={pageNumber}
                                 onClick={() => fetchDirectory(pageNumber)}
                                 className={`h-8 min-w-8 rounded-lg border px-2 text-[10px] font-semibold shadow-sm ${page === pageNumber
-                                        ? "border-[#004AC6] bg-[#004AC6] text-white"
-                                        : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
+                                    ? "border-[#004AC6] bg-[#004AC6] text-white"
+                                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                                     }`}
                             >
                                 {pageNumber}
@@ -634,9 +652,6 @@ const ProfileCard = ({
     const name = getName(profile);
     const userId = getUserId(profile);
 
-    const isAlumni =
-        profile.userId?.role === "alumni";
-
     return (
         <div
             className={
@@ -746,7 +761,7 @@ const ProfileCard = ({
             >
 
                 <Link
-                    to={`/profile/${userId}`}
+                    to={`/student/directory/${userId}`}
                     className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-[#004AC6] bg-white text-[10px] font-semibold text-[#004AC6] shadow-sm transition hover:bg-blue-50 hover:shadow-md"
                 >
                     <Eye size={13} />
@@ -755,7 +770,7 @@ const ProfileCard = ({
 
                 <Link
                     to={{
-                        pathname: "/messages",
+                        pathname: "/student/messages",
                         search: `?chat=${userId}`,
                         state: {
                             chatTarget: {

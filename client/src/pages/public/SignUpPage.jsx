@@ -296,6 +296,7 @@ const SignUpPage = () => {
                                         title="Student"
                                         description="Find mentors, internships and alumni."
                                     />
+
                                     <RoleCard
                                         register={register}
                                         value="alumni"

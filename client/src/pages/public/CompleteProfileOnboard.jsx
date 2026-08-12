@@ -150,7 +150,7 @@ const CompleteProfile = () => {
             });
 
             toast.success(response.data.message || "Profile completed successfully!");
-            navigate("/dashboard");
+            navigate("/signin");
         } catch (err) {
             toast.error(
                 err.response?.data?.message ||

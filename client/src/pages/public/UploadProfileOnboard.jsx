@@ -3,8 +3,8 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import LeftPanel from "../components/auth_page/LeftPannel";
-import TrustLables from "../components/auth_page/TrustLables";
+import LeftPanel from "../../components/auth_page/LeftPannel";
+import TrustLables from "../../components/auth_page/TrustLables";
 import { User, UserPlus, Mail, Camera, Upload, ShieldCheck, Image, Users } from "lucide-react";
 
 const UploadProfileOnboard = () => {
