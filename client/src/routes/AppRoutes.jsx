@@ -24,6 +24,7 @@ import MentorshipPage from "../pages/student/MentorshipPage";
 import MessagesPage from "../pages/student/MessagesPage";
 import UserProfile from "../pages/student/UserProfile";
 import AlumniProfile from "../pages/student/AlumniProfile";
+import EventDetailsPage from "../pages/student/EventDetailsPage";
 
 
 const AppRoutes = () => {
@@ -116,6 +117,11 @@ const AppRoutes = () => {
                 <Route
                     path="events"
                     element={<EventsPage />}
+                />
+
+                <Route
+                    path="events/:eventId"
+                    element={<EventDetailsPage />}
                 />
 
                 <Route
