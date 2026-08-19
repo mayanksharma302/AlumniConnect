@@ -3,8 +3,8 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import LeftPanel from "../components/auth_page/LeftPannel";
-import TrustLables from "../components/auth_page/TrustLables";
+import LeftPanel from "../../components/auth_page/LeftPannel";
+import TrustLables from "../../components/auth_page/TrustLables";
 import { User, UserPlus, Mail, Camera, Upload, ShieldCheck, Image, Users } from "lucide-react";
 
 const UploadProfileOnboard = () => {
@@ -51,7 +51,7 @@ const UploadProfileOnboard = () => {
                 "Profile photo uploaded successfully."
             );
 
-            navigate("/dashboard");
+            navigate("/complete-profile");
         }
         catch (err) {
             toast.error(
@@ -63,7 +63,7 @@ const UploadProfileOnboard = () => {
 
     return (
 
-        <div className="min-h-screen bg-[#F8F9FF] flex">
+        <div className="min-h-screen page-shell flex">
 
             {/* Sidebar */}
 
@@ -85,17 +85,17 @@ const UploadProfileOnboard = () => {
 
             {/* Right */}
 
-            <div className="flex-1 flex items-center justify-center px-8">
+            <div className="flex-1 flex items-center justify-center px-6 py-10">
 
-                <div className="w-full max-w-xl">
+                <div className="w-full max-w-xl page-card rounded-[28px] p-8 sm:p-10">
 
-                    <h1 className="text-4xl font-bold">
+                    <h1 className="page-title">
 
                         Upload Profile Photo
 
                     </h1>
 
-                    <p className="mt-2 text-gray-500">
+                    <p className="page-subtitle">
 
                         Add a photo to personalize your AlumniConnect experience.
 
@@ -228,8 +228,8 @@ const UploadProfileOnboard = () => {
 
                             <button
                                 type="button"
-                                onClick={() => navigate("/dashboard")}
-                                className="h-12 flex-1 rounded-xl border border-gray-300 font-medium transition hover:bg-gray-100"
+                                onClick={() => navigate("/complete-profile")}
+                                className="secondary-btn h-12 flex-1"
                             >
                                 Skip for Now
                             </button>
@@ -237,7 +237,7 @@ const UploadProfileOnboard = () => {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="h-12 flex-1 rounded-xl bg-[#004AC6] font-semibold text-white transition hover:bg-[#0038A8] disabled:opacity-70"
+                                className="primary-btn h-12 flex-1 disabled:opacity-70"
                             >
                                 {isSubmitting ? "Saving..." : "Upload Photo"}
                             </button>
